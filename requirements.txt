@@ -1,7 +1,8 @@
 gradio
+transformers
 torch
 soundfile
-transformers
+gTTS
 groq
 
 
