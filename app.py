@@ -38,7 +38,7 @@ with gr.Blocks() as ui:
     gr.Markdown("## 🎤 Voice-to-Voice AI Assistant")
     
     with gr.Row():
-        audio_input = gr.Audio(source="microphone", type="numpy", label="Record your voice")
+        audio_input = gr.Audio(sources="microphone", type="numpy", label="Record your voice")
         submit_btn = gr.Button("Submit")
     
     with gr.Row():
