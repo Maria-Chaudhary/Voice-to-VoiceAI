@@ -3,36 +3,42 @@ import gradio as gr
 from ai_utils import process_audio
 
 # ---------------------------
-# Gradio UI
+# Function to handle Gradio submission
 # ---------------------------
+def submit_audio(audio, language):
+    if audio is None:
+        return "No audio received.", None
+    # Process audio through our ai_utils function
+    text_resp, audio_path = process_audio(audio, lang=language)
+    return text_resp, audio_path
 
+# ---------------------------
+# Build Gradio Interface
+# ---------------------------
 with gr.Blocks(title="Voice-to-Voice AI Assistant") as ui:
-    
-    gr.Markdown("## 🎙️ Voice-to-Voice AI Assistant")
     gr.Markdown(
-        "Record your voice, submit, and the AI will respond with text and audio.\n\n"
-        "**Powered by Groq, Whisper, and gTTS**"
+        """
+        # 🎤 Voice-to-Voice AI Assistant
+        Speak your question, select language (English/Urdu), and get a real-time AI response with audio.
+        """
     )
 
-    with gr.Row():
-        audio_input = gr.Audio(
-            label="Record your voice here", 
-            type="filepath",  # Provides a file path to process_audio
-            sources="microphone"
-        )
-        submit_btn = gr.Button("Submit")
+    # Audio input from microphone
+    audio_input = gr.Audio(sources="microphone", type="filepath", label="Record your voice")
 
-    ai_text = gr.Textbox(label="AI Response Text", placeholder="AI response will appear here...", lines=5)
+    # Language selector
+    language_select = gr.Radio(choices=["en", "ur"], label="Select Language for Response", value="en")
+
+    # Submit button
+    submit_btn = gr.Button("Submit")
+
+    # Outputs: AI Text + Audio
+    ai_text = gr.Textbox(label="AI Response Text", lines=5)
     ai_audio = gr.Audio(label="AI Response Audio")
 
-    def submit_action(audio_file):
-        if not audio_file:
-            return "ERROR: No audio recorded.", None
+    # Connect the button to processing function
+    submit_btn.click(fn=submit_audio, inputs=[audio_input, language_select], outputs=[ai_text, ai_audio])
 
-        text, audio_path = process_audio(audio_file)
-        return text, audio_path
-
-    submit_btn.click(fn=submit_action, inputs=audio_input, outputs=[ai_text, ai_audio])
-
-# Launch Gradio app
-ui.launch(debug=True, share=True)
+# Launch the UI
+if __name__ == "__main__":
+    ui.launch()
