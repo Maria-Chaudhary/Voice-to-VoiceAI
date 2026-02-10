@@ -6,7 +6,7 @@ from voice_ai import voice_ai
 with gr.Blocks() as ui:
     gr.Markdown("## 🎤 Voice-to-Voice AI Assistant")
     with gr.Row():
-        inp = gr.Audio(source="microphone", type="numpy", label="Record your voice")
+        inp = gr.Audio(sources="microphone", type="numpy", label="Record your voice")
     with gr.Row():
         out_text = gr.Textbox(label="AI Response (Text)")
         out_audio = gr.Audio(label="AI Response (Audio)")
