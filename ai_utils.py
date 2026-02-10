@@ -77,3 +77,29 @@ def process_audio(audio_file_path: str, lang: str = "en"):
     except Exception as e:
         print("ERROR in process_audio:", e)
         return f"ERROR: {e}", None
+
+# ---------------------------
+# Prepare prompt for Groq
+# ---------------------------
+def create_prompt(user_text: str, lang: str = "en"):
+    """
+    lang: "en" for English, "ur" for Urdu
+    """
+    if lang == "ur":
+        # Explicitly instruct Groq to respond in Urdu
+        prompt = f"آپ ایک باصلاحیت اسسٹنٹ ہیں۔ صارف نے کہا: {user_text}\nبراہ کرم اردو میں جواب دیں۔"
+    else:
+        # English
+        prompt = f"You are a helpful assistant. The user said: {user_text}\nPlease respond in English."
+    return prompt
+
+# ---------------------------
+# In process_audio(), replace Groq prompt generation with:
+# ---------------------------
+prompt = create_prompt(text_input, lang=language)
+chat_completion = client.chat.completions.create(
+    messages=[{"role": "user", "content": prompt}],
+    model="llama-3.3-70b-versatile",
+)
+groq_response = chat_completion.choices[0].message.content
+
