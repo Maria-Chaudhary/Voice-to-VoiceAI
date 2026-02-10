@@ -1,22 +1,20 @@
+# app.py
 import gradio as gr
-from ai_utils import voice_ai
+from ai_utils import process_audio
+
+def voice_ai(audio):
+    if audio is None:
+        return "No audio received!", None
+    return process_audio(audio)
 
 with gr.Blocks() as ui:
     gr.Markdown("## 🎙️ Voice-to-Voice AI Assistant")
-    gr.Markdown(
-        "Record your voice, press Submit, and get AI response in both text and audio."
-    )
+    audio_input = gr.Audio(source="microphone", type="filepath", label="Record your voice")
+    submit_btn = gr.Button("Submit")
+    text_output = gr.Textbox(label="AI Response (Text)")
+    audio_output = gr.Audio(label="AI Response (Audio)")
 
-    with gr.Row():
-        audio_input = gr.Audio(
-            sources=["microphone"], type="numpy", label="🎤 Record your voice"
-        )
-        submit_btn = gr.Button("Submit")
+    submit_btn.click(fn=voice_ai, inputs=audio_input, outputs=[text_output, audio_output])
 
-    output_text = gr.Textbox(label="📝 AI Response")
-    output_audio = gr.Audio(type="numpy", label="🔊 AI Response Audio")
-
-    submit_btn.click(voice_ai, inputs=audio_input, outputs=[output_text, output_audio])
-
-ui.launch(share=True)
-
+# Important: In Colab use share=False, Spaces share=True automatically
+ui.launch(share=False)
