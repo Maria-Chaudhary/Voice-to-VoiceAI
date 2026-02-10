@@ -1,16 +1,22 @@
-# app.py
 import gradio as gr
-from voice_ai import voice_ai
+from ai_utils import voice_ai
 
-# Gradio UI
 with gr.Blocks() as ui:
-    gr.Markdown("## 🎤 Voice-to-Voice AI Assistant")
-    with gr.Row():
-        inp = gr.Audio(sources="microphone", type="numpy", label="Record your voice")
-    with gr.Row():
-        out_text = gr.Textbox(label="AI Response (Text)")
-        out_audio = gr.Audio(label="AI Response (Audio)")
+    gr.Markdown("## 🎙️ Voice-to-Voice AI Assistant")
+    gr.Markdown(
+        "Record your voice, press Submit, and get AI response in both text and audio."
+    )
 
-    inp.change(voice_ai, inputs=inp, outputs=[out_text, out_audio])
+    with gr.Row():
+        audio_input = gr.Audio(
+            sources=["microphone"], type="numpy", label="🎤 Record your voice"
+        )
+        submit_btn = gr.Button("Submit")
 
-ui.launch()
+    output_text = gr.Textbox(label="📝 AI Response")
+    output_audio = gr.Audio(type="numpy", label="🔊 AI Response Audio")
+
+    submit_btn.click(voice_ai, inputs=audio_input, outputs=[output_text, output_audio])
+
+ui.launch(share=True)
+
