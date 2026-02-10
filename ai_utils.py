@@ -21,6 +21,28 @@ if not GROQ_API_KEY:
 client = Groq(api_key=GROQ_API_KEY)
 
 # ---------------------------
+# Prepare prompt for Groq
+# ---------------------------
+def create_prompt(user_text: str, wiki_context: str = "", lang: str = "en"):
+    """
+    lang: "en" for English, "ur" for Urdu
+    wiki_context: optional text to give context
+    """
+    if lang.lower() == "ur":
+        # Explicitly instruct Groq to respond in Urdu
+        prompt = f"آپ ایک باصلاحیت اسسٹنٹ ہیں۔ صارف نے کہا: {user_text}\n"
+        if wiki_context:
+            prompt += f"پس منظر: {wiki_context}\n"
+        prompt += "براہ کرم اردو میں جواب دیں۔"
+    else:
+        # English
+        prompt = f"You are a helpful assistant. The user said: {user_text}\n"
+        if wiki_context:
+            prompt += f"Context: {wiki_context}\n"
+        prompt += "Please respond in English."
+    return prompt
+
+# ---------------------------
 # Process audio to text, get AI response, convert to speech
 # ---------------------------
 def process_audio(audio_file_path: str, lang: str = "en"):
@@ -39,14 +61,14 @@ def process_audio(audio_file_path: str, lang: str = "en"):
         print("STT output:", text_input)
 
         # --- 2. Retrieve context from Wikipedia ---
+        wiki_summary = ""
         try:
             wiki_summary = wikipedia.summary(text_input, sentences=2)
         except Exception as e:
             print("Wikipedia fetch failed:", e)
-            wiki_summary = ""
-        
-        # --- 3. Prepare prompt for Groq ---
-        prompt = f"Answer the following question concisely using the context:\nContext: {wiki_summary}\nQuestion: {text_input}"
+
+        # --- 3. Prepare prompt for Groq using correct language ---
+        prompt = create_prompt(text_input, wiki_context=wiki_summary, lang=lang)
 
         # --- 4. Groq chat completion ---
         try:
@@ -77,29 +99,3 @@ def process_audio(audio_file_path: str, lang: str = "en"):
     except Exception as e:
         print("ERROR in process_audio:", e)
         return f"ERROR: {e}", None
-
-# ---------------------------
-# Prepare prompt for Groq
-# ---------------------------
-def create_prompt(user_text: str, lang: str = "en"):
-    """
-    lang: "en" for English, "ur" for Urdu
-    """
-    if lang == "ur":
-        # Explicitly instruct Groq to respond in Urdu
-        prompt = f"آپ ایک باصلاحیت اسسٹنٹ ہیں۔ صارف نے کہا: {user_text}\nبراہ کرم اردو میں جواب دیں۔"
-    else:
-        # English
-        prompt = f"You are a helpful assistant. The user said: {user_text}\nPlease respond in English."
-    return prompt
-
-# ---------------------------
-# In process_audio(), replace Groq prompt generation with:
-# ---------------------------
-prompt = create_prompt(text_input, lang=language)
-chat_completion = client.chat.completions.create(
-    messages=[{"role": "user", "content": prompt}],
-    model="llama-3.3-70b-versatile",
-)
-groq_response = chat_completion.choices[0].message.content
-
