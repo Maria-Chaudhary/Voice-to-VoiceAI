@@ -10,7 +10,7 @@ def handle_audio(audio):
 
 with gr.Blocks() as ui:
     gr.Markdown("## Voice-to-Voice AI Assistant")
-    audio_input = gr.Audio(source="microphone", type="filepath", label="Record your voice")
+    audio_input = gr.Audio(sources="microphone", type="filepath", label="Record your voice")
     submit_btn = gr.Button("Submit")
     text_output = gr.Textbox(label="AI Response (Text)")
     audio_output = gr.Audio(label="AI Response (Audio)")
