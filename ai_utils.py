@@ -3,17 +3,35 @@ import os
 import torch
 import soundfile as sf
 from transformers import pipeline
-from groq.client import Groq
+
+# ---------------------------
+# Import Groq safely
+# ---------------------------
+try:
+    from groq import Groq
+except ImportError as e:
+    print("ERROR: Groq module not found. Install it with 'pip install groq'")
+    Groq = None
 
 # ---------------------------
 # Initialize STT (speech to text)
 # ---------------------------
-stt = pipeline("automatic-speech-recognition", model="openai/whisper-small")
+try:
+    stt = pipeline("automatic-speech-recognition", model="openai/whisper-small")
+    print("STT pipeline loaded successfully.")
+except Exception as e:
+    print("ERROR loading STT pipeline:", e)
+    stt = None
 
 # ---------------------------
 # Initialize TTS (text to speech)
 # ---------------------------
-tts = pipeline("text-to-speech", model="facebook/mms-tts-eng")
+try:
+    tts = pipeline("text-to-speech", model="facebook/mms-tts-eng")
+    print("TTS pipeline loaded successfully.")
+except Exception as e:
+    print("ERROR loading TTS pipeline:", e)
+    tts = None
 
 # ---------------------------
 # Initialize Groq client
@@ -21,7 +39,16 @@ tts = pipeline("text-to-speech", model="facebook/mms-tts-eng")
 GROQ_API_KEY = os.environ.get("GGROQ_API_KEY")
 if not GROQ_API_KEY:
     print("Warning: Groq API key not found in environment variables!")
-client = Groq(api_key=GROQ_API_KEY)
+
+if Groq and GROQ_API_KEY:
+    try:
+        client = Groq(api_key=GROQ_API_KEY)
+        print("Groq client initialized successfully.")
+    except Exception as e:
+        print("ERROR initializing Groq client:", e)
+        client = None
+else:
+    client = None
 
 # ---------------------------
 # Process voice input
@@ -32,16 +59,22 @@ def process_audio(audio_file_path: str):
     Output: tuple (text_response, audio_response_path)
     """
     try:
+        if stt is None or tts is None:
+            raise RuntimeError("STT or TTS pipeline not initialized!")
+
         # STT: Convert speech to text
         print("Converting audio to text...")
         text_input = stt(audio_file_path)["text"]
         print("STT output:", text_input)
 
-        # Groq AI inference (echoing text for demo, replace with your model call)
-        print("Sending text to Groq API...")
-        # Here you would send text_input to your Groq model
-        # Example: groq_response = client.predict(model="YOUR_MODEL", input=text_input)
-        groq_response = f"AI Response to: {text_input}"  # placeholder
+        # Groq AI inference
+        if client:
+            print("Sending text to Groq API...")
+            # Replace with your Groq model call
+            # Example: groq_response = client.predict(model="YOUR_MODEL", input=text_input)
+            groq_response = f"AI Response to: {text_input}"  # placeholder
+        else:
+            groq_response = f"AI Response to: {text_input}"  # fallback
         print("Groq response:", groq_response)
 
         # TTS: Convert response text to audio
