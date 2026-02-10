@@ -3,6 +3,5 @@ transformers
 torch
 soundfile
 gTTS
+wikipedia
 groq
-
-
