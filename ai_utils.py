@@ -3,22 +3,20 @@ import os
 import soundfile as sf
 from gtts import gTTS
 from transformers import pipeline
+from groq.client import Groq
 
 # ---------------------------
-# Initialize STT (speech-to-text)
+# Initialize STT (speech to text)
 # ---------------------------
 stt = pipeline("automatic-speech-recognition", model="openai/whisper-small")
 
 # ---------------------------
-# Groq client (optional)
+# Initialize Groq client
 # ---------------------------
-try:
-    from groq.client import Groq
-    GROQ_API_KEY = os.environ.get("GGROQ_API_KEY")
-    client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
-except Exception as e:
-    print("Groq client not loaded:", e)
-    client = None
+GROQ_API_KEY = os.environ.get("GGROQ_API_KEY")
+if not GROQ_API_KEY:
+    print("Warning: Groq API key not found in environment variables!")
+client = Groq(api_key=GROQ_API_KEY)
 
 # ---------------------------
 # Process voice input
@@ -26,26 +24,31 @@ except Exception as e:
 def process_audio(audio_file_path: str):
     """
     Input: path to audio file (.wav)
-    Output: tuple (text_response, audio_response_path)
+    Output: tuple (AI_text_response, audio_response_path)
     """
     try:
+        # ---------------------------
         # STT: Convert speech to text
+        # ---------------------------
         print("Converting audio to text...")
         text_input = stt(audio_file_path)["text"]
         print("STT output:", text_input)
 
-        # AI inference
-        if client:
-            print("Sending text to Groq API...")
-            # Replace with your Groq model call
-            groq_response = f"AI Response to: {text_input}"  # placeholder
-        else:
-            groq_response = f"AI Response to: {text_input}"
-        print("AI response:", groq_response)
+        # ---------------------------
+        # Groq AI inference
+        # ---------------------------
+        print("Sending text to Groq API...")
+        groq_response = client.predict(
+            model="YOUR_MODEL_NAME",  # replace with your Groq model
+            input=text_input
+        )
+        print("Groq response:", groq_response)
 
-        # TTS: Convert text to speech using gTTS
-        print("Generating audio response with gTTS...")
-        tts = gTTS(groq_response)
+        # ---------------------------
+        # TTS: Convert response text to audio using gTTS
+        # ---------------------------
+        print("Generating audio response...")
+        tts = gTTS(groq_response, lang="en")
         audio_response_path = "response.mp3"
         tts.save(audio_response_path)
         print("Audio saved at:", audio_response_path)
