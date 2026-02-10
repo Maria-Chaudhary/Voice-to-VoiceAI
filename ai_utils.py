@@ -1,6 +1,7 @@
+# ai_utils.py
 import os
-import torch
 import soundfile as sf
+from gtts import gTTS
 from transformers import pipeline
 
 # ---------------------------
@@ -9,12 +10,7 @@ from transformers import pipeline
 stt = pipeline("automatic-speech-recognition", model="openai/whisper-small")
 
 # ---------------------------
-# Initialize TTS (text-to-speech) using stable Google TTS
-# ---------------------------
-tts = pipeline("text-to-speech", model="tts_models/en/ljspeech/tacotron2-DDC")
-
-# ---------------------------
-# Initialize Groq client (optional)
+# Groq client (optional)
 # ---------------------------
 try:
     from groq.client import Groq
@@ -33,7 +29,7 @@ def process_audio(audio_file_path: str):
     Output: tuple (text_response, audio_response_path)
     """
     try:
-        # Convert speech to text
+        # STT: Convert speech to text
         print("Converting audio to text...")
         text_input = stt(audio_file_path)["text"]
         print("STT output:", text_input)
@@ -47,23 +43,11 @@ def process_audio(audio_file_path: str):
             groq_response = f"AI Response to: {text_input}"
         print("AI response:", groq_response)
 
-        # Convert text to speech
-        print("Generating audio response...")
-        tts_output = tts(groq_response)
-
-        # tts_output from this model is always a NumPy array
-        if isinstance(tts_output, dict):
-            audio_array = tts_output.get("array")
-            sampling_rate = tts_output.get("sampling_rate", 22050)
-        else:
-            audio_array = tts_output
-            sampling_rate = 22050
-
-        if audio_array is None:
-            raise RuntimeError("TTS returned no audio!")
-
-        audio_response_path = "response.wav"
-        sf.write(audio_response_path, audio_array, sampling_rate)
+        # TTS: Convert text to speech using gTTS
+        print("Generating audio response with gTTS...")
+        tts = gTTS(groq_response)
+        audio_response_path = "response.mp3"
+        tts.save(audio_response_path)
         print("Audio saved at:", audio_response_path)
 
         return groq_response, audio_response_path
