@@ -80,8 +80,21 @@ def process_audio(audio_file_path: str):
         # TTS: Convert response text to audio
         print("Generating audio response...")
         tts_output = tts(groq_response)
+
+        # Handle different return formats
+        if isinstance(tts_output, dict):
+            audio_array = tts_output.get("array")
+            sampling_rate = tts_output.get("sampling_rate", 22050)
+        else:
+            # sometimes it's just a numpy array
+            audio_array = tts_output
+            sampling_rate = 22050
+
+        if audio_array is None:
+            raise RuntimeError("TTS returned no audio!")
+
         audio_response_path = "response.wav"
-        sf.write(audio_response_path, tts_output["array"], tts_output["sampling_rate"])
+        sf.write(audio_response_path, audio_array, sampling_rate)
         print("Audio saved at:", audio_response_path)
 
         return groq_response, audio_response_path
