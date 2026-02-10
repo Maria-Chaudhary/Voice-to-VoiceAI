@@ -3,7 +3,8 @@ import os
 import soundfile as sf
 from gtts import gTTS
 from transformers import pipeline
-from groq.client import Groq
+from groq import Client as Groq
+
 
 # ---------------------------
 # Initialize STT (speech to text)
