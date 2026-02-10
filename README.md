@@ -34,7 +34,7 @@ The system supports **English and Urdu**, with strict language control and a cle
 * 🌐 **Language Support**
 
   * English → English responses only
-  * Urdu → Urdu responses only (no Hindi mixing)
+  * Urdu → Urdu responses only 
 * 📚 **RAG (Retrieval-Augmented Generation)** using Wikipedia for factual accuracy
 * 🧑‍💻 **Professional & interactive UI** (Gradio)
 * ☁️ **Fully deployable on Hugging Face Spaces**
